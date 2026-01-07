@@ -11,6 +11,7 @@ import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.network.PacketDistributor;
+import net.minecraftforge.event.entity.player.PlayerEvent;
 
 import java.util.*;
 
@@ -63,7 +64,7 @@ public class KnockedManager {
 
     public static void removeKnockedState(LivingEntity entity) {
         knockedEntities.remove(entity.getUUID());
-        grippedEntities.remove(entity.getUUID());
+        setGripped(entity, false);
         MobKillHandler.clearKillAttempt(entity.getUUID());
         entity.setPose(null);
         if (entity instanceof ServerPlayer sp) {
@@ -80,6 +81,12 @@ public class KnockedManager {
             grippedEntities.add(entity.getUUID());
         } else {
             grippedEntities.remove(entity.getUUID());
+        }
+        if (entity instanceof ServerPlayer sp) {
+            NetworkHandler.CHANNEL.send(
+                    PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> sp),
+                    new GrippedStatePacket(sp.getUUID(), isGripped)
+            );
         }
     }
 
@@ -192,5 +199,26 @@ public class KnockedManager {
         }
         knockedEntities.put(player.getUUID(), getKnockedDuration());
         event.setCanceled(true);
+    }
+
+    @SubscribeEvent
+    public static void onPlayerRespawn(PlayerEvent.PlayerRespawnEvent event) {
+        if (!(event.getEntity() instanceof ServerPlayer sp)) return;
+        UUID playerId = sp.getUUID();
+        knockedEntities.remove(playerId);
+        grippedEntities.remove(playerId);
+        MobKillHandler.clearKillAttempt(playerId);
+        NetworkHandler.CHANNEL.send(
+                PacketDistributor.PLAYER.with(() -> sp),
+                new KnockedTimePacket(0)
+        );
+        NetworkHandler.CHANNEL.send(
+                PacketDistributor.PLAYER.with(() -> sp),
+                new ExecutionProgressPacket(0)
+        );
+        NetworkHandler.CHANNEL.send(
+                PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> sp),
+                new GrippedStatePacket(playerId, false)
+        );
     }
 }
