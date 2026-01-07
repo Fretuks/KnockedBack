@@ -215,7 +215,7 @@ public class KnockedManager {
         );
         NetworkHandler.CHANNEL.send(
                 PacketDistributor.PLAYER.with(() -> sp),
-                new ExecutionProgressPacket(0)
+                new ExecutionProgressPacket(0, null)
         );
         NetworkHandler.CHANNEL.send(
                 PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> sp),

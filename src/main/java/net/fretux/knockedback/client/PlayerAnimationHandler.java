@@ -6,6 +6,7 @@ import dev.kosmx.playerAnim.api.layered.ModifierLayer;
 import dev.kosmx.playerAnim.minecraftApi.PlayerAnimationAccess;
 import dev.kosmx.playerAnim.minecraftApi.PlayerAnimationRegistry;
 import net.fretux.knockedback.KnockedBack;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
@@ -19,8 +20,8 @@ import java.util.UUID;
 
 @Mod.EventBusSubscriber(modid = KnockedBack.MOD_ID, value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class PlayerAnimationHandler {
-    private static final ResourceLocation GRIP_ANIMATION_ID =
-            ResourceLocation.fromNamespaceAndPath(KnockedBack.MOD_ID, "animation.model.gripping");
+    private static final ResourceLocation EXECUTION_ANIMATION_ID =
+            ResourceLocation.fromNamespaceAndPath(KnockedBack.MOD_ID, "animation.model.execution");
     private static final Map<UUID, ModifierLayer<IAnimation>> layers = new HashMap<>();
     private static final Map<UUID, Boolean> activeStates = new HashMap<>();
 
@@ -28,18 +29,19 @@ public class PlayerAnimationHandler {
     public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
         if (event.phase != TickEvent.Phase.END) return;
         if (!(event.player instanceof AbstractClientPlayer player)) return;
+        if (Minecraft.getInstance().player != player) return;
         UUID playerId = player.getUUID();
-        boolean shouldGrip = ClientGrippedState.isGripped(playerId);
-        boolean wasGripping = activeStates.getOrDefault(playerId, false);
-        if (shouldGrip == wasGripping) return;
-        activeStates.put(playerId, shouldGrip);
+        boolean shouldPlayExecution = ClientExecutionState.isExecutor(playerId);
+        boolean wasPlaying = activeStates.getOrDefault(playerId, false);
+        if (shouldPlayExecution == wasPlaying) return;
+        activeStates.put(playerId, shouldPlayExecution);
         ModifierLayer<IAnimation> layer = layers.computeIfAbsent(playerId, id -> {
             ModifierLayer<IAnimation> newLayer = new ModifierLayer<>();
             PlayerAnimationAccess.getPlayerAnimLayer(player).addAnimLayer(0, newLayer);
             return newLayer;
         });
-        if (shouldGrip) {
-            var animation = PlayerAnimationRegistry.getAnimation(GRIP_ANIMATION_ID);
+        if (shouldPlayExecution) {
+            var animation = PlayerAnimationRegistry.getAnimation(EXECUTION_ANIMATION_ID);
             if (animation != null) {
                 layer.setAnimation(new KeyframeAnimationPlayer(animation));
             }
