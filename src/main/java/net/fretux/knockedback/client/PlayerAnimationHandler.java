@@ -31,7 +31,7 @@ public class PlayerAnimationHandler {
         if (!(event.player instanceof AbstractClientPlayer player)) return;
         if (Minecraft.getInstance().player != player) return;
         UUID playerId = player.getUUID();
-        boolean shouldPlayExecution = ClientExecutionState.isExecutor(playerId);
+        boolean shouldPlayExecution = ClientExecutionState.isExecuting();
         boolean wasPlaying = activeStates.getOrDefault(playerId, false);
         if (shouldPlayExecution == wasPlaying) return;
         activeStates.put(playerId, shouldPlayExecution);
