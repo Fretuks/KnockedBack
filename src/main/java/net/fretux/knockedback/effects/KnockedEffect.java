@@ -1,6 +1,7 @@
 package net.fretux.knockedback.effects;
 
 import net.fretux.knockedback.KnockedManager;
+import net.fretux.knockedback.CarryManager;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.event.entity.living.LivingEvent;
@@ -21,7 +22,11 @@ public class KnockedEffect {
             player.hurtMarked = true;
             player.setNoGravity(false);
             player.setDeltaMovement(0, player.getDeltaMovement().y(), 0);
-            if (player.getForcedPose() != Pose.SWIMMING) {
+            if (CarryManager.isBeingCarried(player.getUUID())) {
+                if (player.getForcedPose() == Pose.SWIMMING) {
+                    player.setForcedPose(null);
+                }
+            } else if (player.getForcedPose() != Pose.SWIMMING) {
                 player.setForcedPose(Pose.SWIMMING);
             }
         } else if (player.getForcedPose() == Pose.SWIMMING) {
