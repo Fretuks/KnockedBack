@@ -1,8 +1,8 @@
 package net.fretux.knockedback.client;
 
 import dev.kosmx.playerAnim.api.layered.IAnimation;
+import dev.kosmx.playerAnim.api.layered.KeyframeAnimationPlayer;
 import dev.kosmx.playerAnim.api.layered.ModifierLayer;
-import dev.kosmx.playerAnim.core.player.KeyframeAnimationPlayer;
 import dev.kosmx.playerAnim.minecraftApi.PlayerAnimationAccess;
 import dev.kosmx.playerAnim.minecraftApi.PlayerAnimationRegistry;
 import net.fretux.knockedback.KnockedBack;
@@ -19,7 +19,8 @@ import java.util.UUID;
 
 @Mod.EventBusSubscriber(modid = KnockedBack.MOD_ID, value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class PlayerAnimationHandler {
-    private static final ResourceLocation GRIP_ANIMATION_ID = new ResourceLocation(KnockedBack.MOD_ID, "animation.model.gripping");
+    private static final ResourceLocation GRIP_ANIMATION_ID =
+            ResourceLocation.fromNamespaceAndPath(KnockedBack.MOD_ID, "animation.model.gripping");
     private static final Map<UUID, ModifierLayer<IAnimation>> layers = new HashMap<>();
     private static final Map<UUID, Boolean> activeStates = new HashMap<>();
 
@@ -34,7 +35,7 @@ public class PlayerAnimationHandler {
         activeStates.put(playerId, shouldGrip);
         ModifierLayer<IAnimation> layer = layers.computeIfAbsent(playerId, id -> {
             ModifierLayer<IAnimation> newLayer = new ModifierLayer<>();
-            PlayerAnimationAccess.getPlayerAnimLayer(player).addAnimLayer(newLayer);
+            PlayerAnimationAccess.getPlayerAnimLayer(player).addAnimLayer(0, newLayer);
             return newLayer;
         });
         if (shouldGrip) {
