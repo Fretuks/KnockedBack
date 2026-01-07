@@ -90,7 +90,7 @@ public class PlayerExecutionHandler {
                 knocked.sendSystemMessage(Component.translatable("message.knockedback.execution_interrupted"));
                 NetworkHandler.CHANNEL.send(
                         PacketDistributor.PLAYER.with(() -> knocked),
-                        new ExecutionProgressPacket(0)
+                        new ExecutionProgressPacket(0, null)
                 );
             }
             ServerPlayer executor = getPlayerByUuid(attempt.executorUuid);
@@ -98,7 +98,7 @@ public class PlayerExecutionHandler {
                 executor.sendSystemMessage(Component.translatable("message.knockedback.execution_interrupted_executor"));
                 NetworkHandler.CHANNEL.send(
                         PacketDistributor.PLAYER.with(() -> executor),
-                        new ExecutionProgressPacket(0)
+                        new ExecutionProgressPacket(0, null)
                 );
             }
         }
@@ -128,12 +128,12 @@ public class PlayerExecutionHandler {
         KnockedManager.unmarkKillInProgress(knockedPlayer);
         NetworkHandler.CHANNEL.send(
                 PacketDistributor.PLAYER.with(() -> executor),
-                new ExecutionProgressPacket(0)
+                new ExecutionProgressPacket(0, null)
         );
         if (knockedPlayer instanceof ServerPlayer sp) {
             NetworkHandler.CHANNEL.send(
                     PacketDistributor.PLAYER.with(() -> sp),
-                    new ExecutionProgressPacket(0)
+                    new ExecutionProgressPacket(0, null)
             );
         }
         executor.sendSystemMessage(Component.translatable("message.knockedback.you_executed", knockedPlayer.getDisplayName(), "!"));
@@ -160,8 +160,14 @@ public class PlayerExecutionHandler {
                 continue;
             }
             attempt.timeLeft--;
-            NetworkHandler.CHANNEL.send(PacketDistributor.PLAYER.with(() -> executor), new ExecutionProgressPacket(attempt.timeLeft));
-            NetworkHandler.CHANNEL.send(PacketDistributor.PLAYER.with(() -> knocked), new ExecutionProgressPacket(attempt.timeLeft));
+            NetworkHandler.CHANNEL.send(
+                    PacketDistributor.PLAYER.with(() -> executor),
+                    new ExecutionProgressPacket(attempt.timeLeft, attempt.executorUuid)
+            );
+            NetworkHandler.CHANNEL.send(
+                    PacketDistributor.PLAYER.with(() -> knocked),
+                    new ExecutionProgressPacket(attempt.timeLeft, attempt.executorUuid)
+            );
             if (attempt.timeLeft <= 0) {
                 executeKnockedPlayer(executor, knocked);
             } else {
