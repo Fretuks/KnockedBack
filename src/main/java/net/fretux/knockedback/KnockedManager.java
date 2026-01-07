@@ -4,6 +4,7 @@ import net.fretux.knockedback.config.Config;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Items;
 import net.minecraftforge.event.TickEvent;
@@ -66,7 +67,7 @@ public class KnockedManager {
         knockedEntities.remove(entity.getUUID());
         setGripped(entity, false);
         MobKillHandler.clearKillAttempt(entity.getUUID());
-        entity.setPose(null);
+        entity.setPose(Pose.STANDING);
         if (entity instanceof ServerPlayer sp) {
             NetworkHandler.CHANNEL.send(
                     PacketDistributor.PLAYER.with(() -> sp),
