@@ -91,7 +91,11 @@ public class MobKillHandler {
                 setGripped(knocked, false);
                 continue;
             }
-            Mob mob = getMobInRange(knocked);
+            KillAttempt attempt = killAttempts.get(knockedId);
+            Mob mob = attempt != null ? getMobInRangeById(knocked, attempt.mobUuid) : null;
+            if (mob == null) {
+                mob = getMobInRange(knocked);
+            }
             if (mob == null) {
                 if (knocked instanceof ServerPlayer sp) {
                     NetworkHandler.CHANNEL.send(
@@ -103,7 +107,6 @@ public class MobKillHandler {
                 continue;
             }
             setGripped(knocked, true);
-            KillAttempt attempt = killAttempts.get(knockedId);
             if (attempt == null || !attempt.mobUuid.equals(mob.getUUID())) {
                 attempt = new KillAttempt(mob.getUUID(), getExecutionTime());
             } else {
@@ -154,6 +157,19 @@ public class MobKillHandler {
         );
         return world.getEntitiesOfClass(Mob.class, box).stream()
                 .filter(m -> isHostile(m) || isAggressiveNeutral(m, p))
+                .findAny().orElse(null);
+    }
+
+    @Nullable
+    private Mob getMobInRangeById(Player p, UUID mobId) {
+        if (!(p.level() instanceof ServerLevel world)) return null;
+        double r = 2.5;
+        AABB box = new AABB(
+                p.getX() - r, p.getY() - r, p.getZ() - r,
+                p.getX() + r, p.getY() + r, p.getZ() + r
+        );
+        return world.getEntitiesOfClass(Mob.class, box).stream()
+                .filter(m -> m.getUUID().equals(mobId))
                 .findAny().orElse(null);
     }
 
