@@ -65,7 +65,7 @@ public class KnockedManager {
         knockedEntities.remove(entity.getUUID());
         grippedEntities.remove(entity.getUUID());
         MobKillHandler.clearKillAttempt(entity.getUUID());
-        entity.setForcedPose(null);
+        entity.setPose(null);
         if (entity instanceof ServerPlayer sp) {
             NetworkHandler.CHANNEL.send(
                     PacketDistributor.PLAYER.with(() -> sp),
