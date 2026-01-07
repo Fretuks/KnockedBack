@@ -14,5 +14,6 @@ public class NetworkHandler {
         CHANNEL.registerMessage(id++, KnockedTimePacket.class, KnockedTimePacket::encode, KnockedTimePacket::decode, KnockedTimePacket::handle);
         CHANNEL.registerMessage(id++, ExecutionProgressPacket.class, ExecutionProgressPacket::encode, ExecutionProgressPacket::decode, ExecutionProgressPacket::handle);
         CHANNEL.registerMessage(id++, CarryTogglePacket.class, CarryTogglePacket::encode, CarryTogglePacket::decode, CarryTogglePacket::handle);
+        CHANNEL.registerMessage(id++, GrippedStatePacket.class, GrippedStatePacket::encode, GrippedStatePacket::decode, GrippedStatePacket::handle);
     }
 }
