@@ -65,7 +65,7 @@ public class MobKillHandler {
                 if (p instanceof ServerPlayer sp) {
                     NetworkHandler.CHANNEL.send(
                             PacketDistributor.PLAYER.with(() -> sp),
-                            new ExecutionProgressPacket(0)
+                            new ExecutionProgressPacket(0, null)
                     );
                 }
                 setGripped(p, false);
@@ -85,7 +85,7 @@ public class MobKillHandler {
                 if (knocked instanceof ServerPlayer sp) {
                     NetworkHandler.CHANNEL.send(
                             PacketDistributor.PLAYER.with(() -> sp),
-                            new ExecutionProgressPacket(0)
+                            new ExecutionProgressPacket(0, null)
                     );
                 }
                 setGripped(knocked, false);
@@ -100,7 +100,7 @@ public class MobKillHandler {
                 if (knocked instanceof ServerPlayer sp) {
                     NetworkHandler.CHANNEL.send(
                             PacketDistributor.PLAYER.with(() -> sp),
-                            new ExecutionProgressPacket(0)
+                            new ExecutionProgressPacket(0, null)
                     );
                 }
                 setGripped(knocked, false);
@@ -114,7 +114,7 @@ public class MobKillHandler {
                 if (knocked instanceof ServerPlayer sp) {
                     NetworkHandler.CHANNEL.send(
                             PacketDistributor.PLAYER.with(() -> sp),
-                            new ExecutionProgressPacket(attempt.timeLeft)
+                            new ExecutionProgressPacket(attempt.timeLeft, null)
                     );
                 }
                 if (attempt.timeLeft <= 0) {
@@ -141,7 +141,7 @@ public class MobKillHandler {
         if (knocked instanceof ServerPlayer sp) {
             NetworkHandler.CHANNEL.send(
                     PacketDistributor.PLAYER.with(() -> sp),
-                    new ExecutionProgressPacket(0)
+                    new ExecutionProgressPacket(0, null)
             );
         }
     }
