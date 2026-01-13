@@ -167,22 +167,9 @@ public class KnockedManager {
             }
             return;
         }
-        String damageType = src.getMsgId();
         boolean isFatal = player.getHealth() - event.getAmount() <= 0;
         if (isFatal) {
-            if (Config.COMMON.explosionsBypassKnockdown.get() &&
-                    (damageType.contains("explosion") || damageType.contains("fireworks"))) {
-                killAndRemove(player);
-                return;
-            }
-            if (Config.COMMON.fallDamageBypassesKnockdown.get() && damageType.contains("fall")) {
-                killAndRemove(player);
-                return;
-            }
-            if (Config.COMMON.lavaBypassesKnockdown.get() &&
-                    (damageType.contains("lava") || damageType.contains("inFire") ||
-                            damageType.contains("fire") || damageType.contains("onFire") ||
-                            damageType.contains("fireball") || damageType.contains("hotFloor"))) {
+            if (src.is(KnockedBackDamageTags.BYPASS_KNOCKDOWN)) {
                 killAndRemove(player);
                 return;
             }

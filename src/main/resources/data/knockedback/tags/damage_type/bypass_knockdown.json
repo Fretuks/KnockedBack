@@ -1,0 +1,14 @@
+{
+  "replace": false,
+  "values": [
+    "minecraft:explosion",
+    "minecraft:player_explosion",
+    "minecraft:fireworks",
+    "minecraft:fall",
+    "minecraft:lava",
+    "minecraft:in_fire",
+    "minecraft:on_fire",
+    "minecraft:hot_floor",
+    "minecraft:fireball"
+  ]
+}
