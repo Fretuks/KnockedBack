@@ -5,10 +5,18 @@
     "minecraft:player_explosion",
     "minecraft:fireworks",
     "minecraft:fall",
+    "minecraft:fly_into_wall",
     "minecraft:lava",
     "minecraft:in_fire",
     "minecraft:on_fire",
     "minecraft:hot_floor",
-    "minecraft:fireball"
+    "minecraft:fireball",
+    "minecraft:drown",
+    "minecraft:freeze",
+    "minecraft:in_wall",
+    "minecraft:cramming",
+    "minecraft:starve",
+    "minecraft:dry_out",
+    "minecraft:out_of_world"
   ]
 }
