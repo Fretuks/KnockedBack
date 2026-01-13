@@ -16,9 +16,6 @@ public class Config {
         public final ForgeConfigSpec.IntValue knockedDuration;
         public final ForgeConfigSpec.IntValue executionTime;
         public final ForgeConfigSpec.BooleanValue totemPreventsKnockdown;
-        public final ForgeConfigSpec.BooleanValue explosionsBypassKnockdown;
-        public final ForgeConfigSpec.BooleanValue fallDamageBypassesKnockdown;
-        public final ForgeConfigSpec.BooleanValue lavaBypassesKnockdown;
 
         public Common(ForgeConfigSpec.Builder builder) {
             builder.push("general");
@@ -36,18 +33,6 @@ public class Config {
             totemPreventsKnockdown = builder
                     .comment("If true, Totems of Undying prevent entering the knocked state. Default: true.")
                     .define("totemPreventsKnockdown", true);
-
-            explosionsBypassKnockdown = builder
-                    .comment("If true, explosions immediately kill instead of knocking down. Default: true.")
-                    .define("explosionsBypassKnockdown", true);
-
-            fallDamageBypassesKnockdown = builder
-                    .comment("If true, fatal fall damage kills instead of knocking down. Default: true.")
-                    .define("fallDamageBypassesKnockdown", true);
-
-            lavaBypassesKnockdown = builder
-                    .comment("If true, lava or fire damage kills instead of knocking down. Default: true.")
-                    .define("lavaBypassesKnockdown", true);
 
             builder.pop();
         }
