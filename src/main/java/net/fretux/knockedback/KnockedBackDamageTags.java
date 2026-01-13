@@ -8,7 +8,7 @@ import net.minecraft.world.damagesource.DamageType;
 public final class KnockedBackDamageTags {
     public static final TagKey<DamageType> BYPASS_KNOCKDOWN = TagKey.create(
             Registries.DAMAGE_TYPE,
-            new ResourceLocation(KnockedBack.MOD_ID, "bypass_knockdown")
+            ResourceLocation.fromNamespaceAndPath(KnockedBack.MOD_ID, "bypass_knockdown")
     );
 
     private KnockedBackDamageTags() {
