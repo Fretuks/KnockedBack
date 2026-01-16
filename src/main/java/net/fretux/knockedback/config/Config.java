@@ -2,6 +2,8 @@ package net.fretux.knockedback.config;
 
 import net.minecraftforge.common.ForgeConfigSpec;
 
+import java.util.List;
+
 public class Config {
     public static final ForgeConfigSpec COMMON_SPEC;
     public static final Common COMMON;
@@ -16,6 +18,8 @@ public class Config {
         public final ForgeConfigSpec.IntValue knockedDuration;
         public final ForgeConfigSpec.IntValue executionTime;
         public final ForgeConfigSpec.BooleanValue totemPreventsKnockdown;
+        public final ForgeConfigSpec.ConfigValue<List<? extends String>> mobExecutionAllowlist;
+        public final ForgeConfigSpec.ConfigValue<List<? extends String>> knockedPotionEffects;
 
         public Common(ForgeConfigSpec.Builder builder) {
             builder.push("general");
@@ -27,6 +31,18 @@ public class Config {
             executionTime = builder
                     .comment("How long (in ticks) it takes to execute a knocked player. Default: 60 (3 seconds).")
                     .defineInRange("executionTime", 60, 20, 200);
+
+            mobExecutionAllowlist = builder
+                    .comment("List of entity ids allowed to execute knocked players.",
+                            "If empty, any hostile/aggro mob can execute.",
+                            "Example: [\"minecraft:zombie\", \"modid:custom_mob\"]")
+                    .defineListAllowEmpty("mobExecutionAllowlist", List.of(), o -> o instanceof String);
+
+            knockedPotionEffects = builder
+                    .comment("Potion effects to apply while a player is knocked.",
+                            "Format: effect_id,duration,amplifier[,ambient][,visible][,showIcon]",
+                            "Example: [\"minecraft:slowness,200,1\", \"minecraft:weakness,200,0,true,false,false\"]")
+                    .defineListAllowEmpty("knockedPotionEffects", List.of(), o -> o instanceof String);
 
             builder.pop().push("damage_behavior");
 

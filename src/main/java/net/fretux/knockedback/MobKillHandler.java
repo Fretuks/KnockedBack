@@ -7,11 +7,13 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.network.PacketDistributor;
+import net.minecraftforge.registries.ForgeRegistries;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -156,7 +158,7 @@ public class MobKillHandler {
                 p.getX() + r, p.getY() + r, p.getZ() + r
         );
         return world.getEntitiesOfClass(Mob.class, box).stream()
-                .filter(m -> isHostile(m) || isAggressiveNeutral(m, p))
+                .filter(m -> (isHostile(m) || isAggressiveNeutral(m, p)) && isMobAllowedToExecute(m))
                 .findAny().orElse(null);
     }
 
@@ -169,8 +171,17 @@ public class MobKillHandler {
                 p.getX() + r, p.getY() + r, p.getZ() + r
         );
         return world.getEntitiesOfClass(Mob.class, box).stream()
-                .filter(m -> m.getUUID().equals(mobId))
+                .filter(m -> m.getUUID().equals(mobId) && isMobAllowedToExecute(m))
                 .findAny().orElse(null);
+    }
+
+    private boolean isMobAllowedToExecute(Mob mob) {
+        List<? extends String> allowlist = Config.COMMON.mobExecutionAllowlist.get();
+        if (allowlist.isEmpty()) {
+            return true;
+        }
+        ResourceLocation id = ForgeRegistries.ENTITY_TYPES.getKey(mob.getType());
+        return id != null && allowlist.contains(id.toString());
     }
 
 
