@@ -3,16 +3,20 @@ package net.fretux.knockedback;
 import net.fretux.knockedback.config.Config;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Items;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.network.PacketDistributor;
 import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.*;
 
@@ -42,6 +46,7 @@ public class KnockedManager {
         if (!isKnocked(entity)) {
             knockedEntities.put(entity.getUUID(), getKnockedDuration());
             entity.setHealth(1.0F);
+            applyKnockedEffects((Player) entity);
         }
     }
 
@@ -107,6 +112,7 @@ public class KnockedManager {
                     || CarryManager.isBeingCarried(playerId)) {
                 ServerPlayer p = NetworkHandlerHelper.getPlayerByUuid(server, playerId);
                 if (p != null) {
+                    applyKnockedEffects(p);
                     NetworkHandler.CHANNEL.send(
                             PacketDistributor.PLAYER.with(() -> p),
                             new KnockedTimePacket(timeLeft)
@@ -118,6 +124,7 @@ public class KnockedManager {
                     || PlayerExecutionHandler.isBeingPlayerExecuted(playerId)) {
                 ServerPlayer p = NetworkHandlerHelper.getPlayerByUuid(server, playerId);
                 if (p != null) {
+                    applyKnockedEffects(p);
                     NetworkHandler.CHANNEL.send(
                             PacketDistributor.PLAYER.with(() -> p),
                             new KnockedTimePacket(timeLeft)
@@ -139,6 +146,7 @@ public class KnockedManager {
                 entry.setValue(timeLeft);
                 ServerPlayer p = NetworkHandlerHelper.getPlayerByUuid(server, playerId);
                 if (p != null) {
+                    applyKnockedEffects(p);
                     NetworkHandler.CHANNEL.send(
                             PacketDistributor.PLAYER.with(() -> p),
                             new KnockedTimePacket(timeLeft)
@@ -186,6 +194,7 @@ public class KnockedManager {
             return;
         }
         knockedEntities.put(player.getUUID(), getKnockedDuration());
+        applyKnockedEffects(player);
         event.setCanceled(true);
     }
 
@@ -208,5 +217,58 @@ public class KnockedManager {
                 PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> sp),
                 new GrippedStatePacket(playerId, false)
         );
+    }
+
+    private static void applyKnockedEffects(Player player) {
+        List<? extends String> configured = Config.COMMON.knockedPotionEffects.get();
+        if (configured.isEmpty()) {
+            return;
+        }
+        for (String entry : configured) {
+            MobEffectInstance instance = parseEffect(entry);
+            if (instance == null) {
+                continue;
+            }
+            MobEffect effect = instance.getEffect();
+            MobEffectInstance existing = player.getEffect(effect);
+            if (existing == null || existing.getDuration() < 20 || existing.getAmplifier() < instance.getAmplifier()) {
+                player.addEffect(instance);
+            }
+        }
+    }
+
+    private static MobEffectInstance parseEffect(String entry) {
+        if (entry == null || entry.isBlank()) {
+            return null;
+        }
+        String[] parts = entry.split(",");
+        if (parts.length < 3) {
+            return null;
+        }
+        ResourceLocation effectId = ResourceLocation.tryParse(parts[0].trim());
+        if (effectId == null) {
+            return null;
+        }
+        MobEffect effect = ForgeRegistries.MOB_EFFECTS.getValue(effectId);
+        if (effect == null) {
+            return null;
+        }
+        Integer duration = parseInt(parts[1].trim());
+        Integer amplifier = parseInt(parts[2].trim());
+        if (duration == null || amplifier == null) {
+            return null;
+        }
+        boolean ambient = parts.length > 3 ? Boolean.parseBoolean(parts[3].trim()) : false;
+        boolean visible = parts.length > 4 ? Boolean.parseBoolean(parts[4].trim()) : true;
+        boolean showIcon = parts.length > 5 ? Boolean.parseBoolean(parts[5].trim()) : true;
+        return new MobEffectInstance(effect, duration, amplifier, ambient, visible, showIcon);
+    }
+
+    private static Integer parseInt(String value) {
+        try {
+            return Integer.parseInt(value);
+        } catch (NumberFormatException e) {
+            return null;
+        }
     }
 }
