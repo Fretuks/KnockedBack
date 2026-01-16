@@ -79,6 +79,24 @@ public class MobKillHandler {
 
     private void tickKillAttempts() {
         var server = net.minecraftforge.server.ServerLifecycleHooks.getCurrentServer();
+        if (!Config.COMMON.mobExecutionEnabled.get()) {
+            if (!killAttempts.isEmpty()) {
+                for (UUID knockedId : new HashSet<>(killAttempts.keySet())) {
+                    Player knocked = getPlayerByUuid(knockedId);
+                    if (knocked instanceof ServerPlayer sp) {
+                        NetworkHandler.CHANNEL.send(
+                                PacketDistributor.PLAYER.with(() -> sp),
+                                new ExecutionProgressPacket(0, null)
+                        );
+                    }
+                    if (knocked != null) {
+                        setGripped(knocked, false);
+                    }
+                }
+                killAttempts.clear();
+            }
+            return;
+        }
         Map<UUID, KillAttempt> updated = new HashMap<>();
         for (UUID knockedId : KnockedManager.getKnockedUuids()) {
             Player knocked = getPlayerByUuid(knockedId);
@@ -176,6 +194,9 @@ public class MobKillHandler {
     }
 
     private boolean isMobAllowedToExecute(Mob mob) {
+        if (!Config.COMMON.mobExecutionEnabled.get()) {
+            return false;
+        }
         List<? extends String> allowlist = Config.COMMON.mobExecutionAllowlist.get();
         if (allowlist.isEmpty()) {
             return true;

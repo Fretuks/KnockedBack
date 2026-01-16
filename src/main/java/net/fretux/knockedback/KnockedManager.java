@@ -54,6 +54,7 @@ public class KnockedManager {
     public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
         if (!(event.player instanceof ServerPlayer sp)) return;
         if (KnockedManager.isKnocked(sp)) {
+            applyKnockedEffects(sp);
             boolean grounded = sp.onGround() || sp.isInWater();
             sp.setNoGravity(false);
             if (!grounded) {
@@ -168,14 +169,24 @@ public class KnockedManager {
         DamageSource src = event.getSource();
         if (!(entity instanceof Player player)) return;
         if (killingNow.contains(player.getUUID())) return;
-        if (MobKillHandler.isBeingMobExecuted(player.getUUID())
-                || PlayerExecutionHandler.isBeingPlayerExecuted(player.getUUID())) {
-            if (event.getSource().getEntity() instanceof LivingEntity) {
-                event.setCanceled(true);
+        boolean isFatal = player.getHealth() - event.getAmount() <= 0;
+        if (isKnocked(player)) {
+            if (src.is(KnockedBackDamageTags.BYPASS_KNOCKDOWN)) {
+                if (isFatal) {
+                    killAndRemove(player);
+                }
+                return;
             }
+            knockedEntities.put(player.getUUID(), getKnockedDuration());
+            applyKnockedEffects(player);
+            event.setCanceled(true);
             return;
         }
-        boolean isFatal = player.getHealth() - event.getAmount() <= 0;
+        if (MobKillHandler.isBeingMobExecuted(player.getUUID())
+                || PlayerExecutionHandler.isBeingPlayerExecuted(player.getUUID())) {
+            event.setCanceled(true);
+            return;
+        }
         if (isFatal) {
             if (src.is(KnockedBackDamageTags.BYPASS_KNOCKDOWN)) {
                 killAndRemove(player);
@@ -184,18 +195,12 @@ public class KnockedManager {
         }
         boolean hasTotem = player.getMainHandItem().is(Items.TOTEM_OF_UNDYING)
                 || player.getOffhandItem().is(Items.TOTEM_OF_UNDYING);
-        if (!isKnocked(player)) {
-            if (isFatal) {
-                if (!hasTotem || !Config.COMMON.totemPreventsKnockdown.get()) {
-                    event.setCanceled(true);
-                    applyKnockedState(player);
-                }
+        if (isFatal) {
+            if (!hasTotem || !Config.COMMON.totemPreventsKnockdown.get()) {
+                event.setCanceled(true);
+                applyKnockedState(player);
             }
-            return;
         }
-        knockedEntities.put(player.getUUID(), getKnockedDuration());
-        applyKnockedEffects(player);
-        event.setCanceled(true);
     }
 
     @SubscribeEvent

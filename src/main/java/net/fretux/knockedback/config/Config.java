@@ -17,6 +17,7 @@ public class Config {
     public static class Common {
         public final ForgeConfigSpec.IntValue knockedDuration;
         public final ForgeConfigSpec.IntValue executionTime;
+        public final ForgeConfigSpec.BooleanValue mobExecutionEnabled;
         public final ForgeConfigSpec.BooleanValue totemPreventsKnockdown;
         public final ForgeConfigSpec.ConfigValue<List<? extends String>> mobExecutionAllowlist;
         public final ForgeConfigSpec.ConfigValue<List<? extends String>> knockedPotionEffects;
@@ -31,6 +32,10 @@ public class Config {
             executionTime = builder
                     .comment("How long (in ticks) it takes to execute a knocked player. Default: 60 (3 seconds).")
                     .defineInRange("executionTime", 60, 20, 200);
+
+            mobExecutionEnabled = builder
+                    .comment("If true, mobs can execute knocked players. Default: true.")
+                    .define("mobExecutionEnabled", true);
 
             mobExecutionAllowlist = builder
                     .comment("List of entity ids allowed to execute knocked players.",
