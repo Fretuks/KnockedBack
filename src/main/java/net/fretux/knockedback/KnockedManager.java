@@ -226,14 +226,27 @@ public class KnockedManager {
 
     private static void applyKnockedEffects(Player player) {
         List<? extends String> configured = Config.COMMON.knockedPotionEffects.get();
-        if (configured.isEmpty()) {
-            return;
-        }
+        Map<MobEffect, MobEffectInstance> desiredEffects = new HashMap<>();
         for (String entry : configured) {
             MobEffectInstance instance = parseEffect(entry);
             if (instance == null) {
                 continue;
             }
+            MobEffect effect = instance.getEffect();
+            MobEffectInstance existing = desiredEffects.get(effect);
+            if (existing == null || existing.getAmplifier() < instance.getAmplifier()) {
+                desiredEffects.put(effect, instance);
+            }
+        }
+        if (Config.COMMON.removeOtherPotionEffectsWhileKnocked.get()) {
+            for (MobEffectInstance current : new ArrayList<>(player.getActiveEffects())) {
+                MobEffect currentEffect = current.getEffect();
+                if (!desiredEffects.containsKey(currentEffect)) {
+                    player.removeEffect(currentEffect);
+                }
+            }
+        }
+        for (MobEffectInstance instance : desiredEffects.values()) {
             MobEffect effect = instance.getEffect();
             MobEffectInstance existing = player.getEffect(effect);
             if (existing == null || existing.getDuration() < 20 || existing.getAmplifier() < instance.getAmplifier()) {
