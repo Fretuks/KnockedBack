@@ -21,6 +21,7 @@ public class Config {
         public final ForgeConfigSpec.BooleanValue totemPreventsKnockdown;
         public final ForgeConfigSpec.ConfigValue<List<? extends String>> mobExecutionAllowlist;
         public final ForgeConfigSpec.ConfigValue<List<? extends String>> knockedPotionEffects;
+        public final ForgeConfigSpec.BooleanValue removeOtherPotionEffectsWhileKnocked;
 
         public Common(ForgeConfigSpec.Builder builder) {
             builder.push("general");
@@ -48,6 +49,10 @@ public class Config {
                             "Format: effect_id,duration,amplifier[,ambient][,visible][,showIcon]",
                             "Example: [\"minecraft:slowness,200,1\", \"minecraft:weakness,200,0,true,false,false\"]")
                     .defineListAllowEmpty("knockedPotionEffects", List.of(), o -> o instanceof String);
+
+            removeOtherPotionEffectsWhileKnocked = builder
+                    .comment("If true, remove any potion effects not listed in knockedPotionEffects while knocked. Default: false.")
+                    .define("removeOtherPotionEffectsWhileKnocked", false);
 
             builder.pop().push("damage_behavior");
 
