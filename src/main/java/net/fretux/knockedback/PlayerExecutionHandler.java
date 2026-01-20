@@ -108,9 +108,12 @@ public class PlayerExecutionHandler {
     public static void onLivingHurt(LivingHurtEvent event) {
         if (!(event.getEntity() instanceof ServerPlayer hurtPlayer)) return;
         UUID hurtId = hurtPlayer.getUUID();
-        boolean wasExecutor = executionAttempts.values().removeIf(attempt -> attempt.executorUuid.equals(hurtId));
-        if (wasExecutor) {
-            hurtPlayer.sendSystemMessage(Component.translatable("message.knockedback.execution_interrupted"));
+        List<UUID> toCancel = executionAttempts.entrySet().stream()
+                .filter(entry -> entry.getValue().executorUuid.equals(hurtId))
+                .map(Map.Entry::getKey)
+                .toList();
+        for (UUID knockedId : toCancel) {
+            cancelExecution(knockedId);
         }
     }
 
@@ -147,16 +150,19 @@ public class PlayerExecutionHandler {
     public static void onServerTick(TickEvent.ServerTickEvent event) {
         if (event.phase != TickEvent.Phase.END || !event.side.isServer()) return;
         Map<UUID, PlayerExecutionAttempt> updated = new HashMap<>();
+        List<UUID> toCancel = new ArrayList<>();
+        List<UUID> toExecute = new ArrayList<>();
         for (Map.Entry<UUID, PlayerExecutionAttempt> entry : executionAttempts.entrySet()) {
             UUID knockedId = entry.getKey();
             PlayerExecutionAttempt attempt = entry.getValue();
             ServerPlayer knocked = getPlayerByUuid(knockedId);
             ServerPlayer executor = getPlayerByUuid(attempt.executorUuid);
             if (knocked == null || executor == null || !KnockedManager.isKnocked(knocked)) {
+                toCancel.add(knockedId);
                 continue;
             }
             if (executor.distanceTo(knocked) > EXECUTION_RANGE) {
-                cancelExecution(knockedId);
+                toCancel.add(knockedId);
                 continue;
             }
             attempt.timeLeft--;
@@ -169,10 +175,26 @@ public class PlayerExecutionHandler {
                     new ExecutionProgressPacket(attempt.timeLeft, attempt.executorUuid)
             );
             if (attempt.timeLeft <= 0) {
-                executeKnockedPlayer(executor, knocked);
+                toExecute.add(knockedId);
             } else {
                 updated.put(knockedId, attempt);
             }
+        }
+        for (UUID knockedId : toCancel) {
+            cancelExecution(knockedId);
+        }
+        for (UUID knockedId : toExecute) {
+            PlayerExecutionAttempt attempt = executionAttempts.get(knockedId);
+            if (attempt == null) {
+                continue;
+            }
+            ServerPlayer knocked = getPlayerByUuid(knockedId);
+            ServerPlayer executor = getPlayerByUuid(attempt.executorUuid);
+            if (knocked == null || executor == null) {
+                cancelExecution(knockedId);
+                continue;
+            }
+            executeKnockedPlayer(executor, knocked);
         }
         executionAttempts.clear();
         executionAttempts.putAll(updated);

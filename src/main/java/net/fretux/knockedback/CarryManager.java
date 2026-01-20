@@ -89,11 +89,19 @@ public class CarryManager {
         }
         for (UUID kid : toDrop) {
             UUID cid = carrying.get(kid);
+            if (cid == null) {
+                carrying.remove(kid);
+                continue;
+            }
             ServerPlayer carrier = NetworkHandlerHelper.getPlayerByUuid(
                     net.minecraftforge.server.ServerLifecycleHooks.getCurrentServer(), cid);
             ServerPlayer knocked = NetworkHandlerHelper.getPlayerByUuid(
                     net.minecraftforge.server.ServerLifecycleHooks.getCurrentServer(), kid);
-            if (carrier != null && knocked != null) stopCarry(knocked, carrier);
+            if (carrier != null && knocked != null) {
+                stopCarry(knocked, carrier);
+            } else {
+                carrying.remove(kid);
+            }
         }
     }
 
